@@ -2,8 +2,10 @@
 
 namespace App\Models;
 
+use App\Scoping\Contracts\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 
 class Product extends Model
 {
@@ -19,7 +21,7 @@ class Product extends Model
     }
 
     // filter all product with matching category name
-    public function scopeWithCategory(Builder $builder, string $categoryName = null)
+    public function scopeOfCategory(Builder $builder, string $categoryName = null)
     {
         if (is_null($categoryName) || !is_string($categoryName)) {
             return $builder;
@@ -27,5 +29,17 @@ class Product extends Model
         return $builder->whereHas('categories', function (Builder $query) use ($categoryName) {
             $query->where('name', $categoryName);
         });
+    }
+
+    public function scopeOfScopes(Builder $builder, array $scopes)
+    {
+        foreach ($scopes as $name => $scope) {
+            $value = request()->input($name);
+            if (is_null($value) || !$scope instanceof Scope) {
+                continue;
+            }
+            $scope->apply($builder, $value);
+        }
+        return $builder;
     }
 }
