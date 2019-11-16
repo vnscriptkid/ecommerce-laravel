@@ -10,4 +10,10 @@ class Product extends Model
     {
         return 'slug';
     }
+
+    // many to many
+    public function categories()
+    {
+        return $this->belongsToMany(Category::class, 'product_category');
+    }
 }
