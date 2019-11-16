@@ -2,9 +2,9 @@
 
 namespace Tests\Feature\Products;
 
+use App\Models\Category;
 use App\Models\Product;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
 class ProductIndexTest extends TestCase
@@ -62,5 +62,29 @@ class ProductIndexTest extends TestCase
                 return $product->name;
             })->toArray()
         );
+    }
+
+    public function test_it_should_filtered_by_category_name_passed_as_query_param()
+    {
+        $category = factory(Category::class)->create();
+        $category->products()->save(
+            $product = factory(Product::class)->create()
+        );
+        factory(Product::class)->create();
+
+        // Act 1
+        $response = $this->json('GET', '/api/products?category=nonexist');
+
+        // Assert 1
+        $response->assertStatus(200);
+        $response->assertJsonCount(0, 'data');
+
+        // Act 2
+        $response = $this->json('GET', "/api/products?category={$category->name}");
+
+        // Assert 2
+        $response->assertStatus(200);
+        $response->assertJsonCount(1, 'data');
+        $response->assertSee($product->name);
     }
 }
