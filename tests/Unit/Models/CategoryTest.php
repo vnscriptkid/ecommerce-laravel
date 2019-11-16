@@ -3,6 +3,7 @@
 namespace Tests\Unit\Models;
 
 use App\Models\Category;
+use App\Models\Product;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -70,5 +71,23 @@ class CategoryTest extends TestCase
         $orderedList = Category::ordered('desc')->get();
         $this->assertEquals($orderedList->count(), 2);
         $this->assertEquals($orderedList->first()->order, $high->order);
+    }
+
+    public function test_category_with_no_products()
+    {
+        $category = factory(Category::class)->create();
+        $this->assertEquals($category->products->count(), 0);
+    }
+
+    public function test_catetory_with_1_product()
+    {
+        $category = factory(Category::class)->create();
+        $product = $category->products()->save(
+            factory(Product::class)->create()
+        );
+
+        $this->assertTrue($category->products->count() === 1);
+        $this->assertInstanceOf(Product::class, $category->products->first());
+        $this->assertTrue($category->products->first()->name === $product->name);
     }
 }
