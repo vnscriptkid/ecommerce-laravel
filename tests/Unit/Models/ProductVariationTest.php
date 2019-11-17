@@ -5,6 +5,7 @@ namespace Tests\Unit\Models;
 use App\Models\Product;
 use App\Models\ProductVariation;
 use App\Models\ProductVariationType;
+use App\Models\Stock;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -43,5 +44,21 @@ class ProductVariationTest extends TestCase
         ]);
 
         $this->assertEquals($variation->formattedPrice, '£1.23');
+    }
+
+    public function test_it_has_many_stocks()
+    {
+        $variation = factory(ProductVariation::class)->create([
+            'product_id' => factory(Product::class)->create()->id,
+            'product_variation_type_id' => factory(ProductVariationType::class)->create()->id
+        ]);
+
+        $stock = $variation->stocks()->save(
+            factory(Stock::class)->make()
+        );
+
+        $this->isInstanceOf(Stock::class, $variation->stocks->first());
+        $this->assertEquals($variation->stocks->count(), 1);
+        $this->assertEquals($variation->stocks->first()->quantity, $stock->quantity);
     }
 }

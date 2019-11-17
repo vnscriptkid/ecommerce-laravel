@@ -30,4 +30,10 @@ class ProductVariation extends Model
     {
         return $this->hasOne(ProductVariationType::class, 'id', 'product_variation_type_id');
     }
+
+    // one to many
+    public function stocks()
+    {
+        return $this->hasMany(Stock::class);
+    }
 }
