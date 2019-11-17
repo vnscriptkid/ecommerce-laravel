@@ -32,4 +32,16 @@ class ProductVariationTest extends TestCase
 
         $this->assertInstanceOf(ProductVariationType::class, $variation->type);
     }
+
+    public function test_it_should_inherit_product_price_in_case_null()
+    {
+        $variation = factory(ProductVariation::class)->create([
+            'product_id' => factory(Product::class)->create([
+                'price' => 123
+            ])->id,
+            'product_variation_type_id' => factory(ProductVariationType::class)->create()->id
+        ]);
+
+        $this->assertEquals($variation->formattedPrice, '£1.23');
+    }
 }
