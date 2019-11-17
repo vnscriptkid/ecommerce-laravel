@@ -14,7 +14,7 @@ class AddProductVatiationTypeIdToProductVariationsTable extends Migration
     public function up()
     {
         Schema::table('product_variations', function (Blueprint $table) {
-            $table->unsignedInteger('product_variation_type_id')->index();
+            $table->unsignedInteger('product_variation_type_id')->nullable()->index();
             $table->foreign('product_variation_type_id')->references('id')->on('product_variation_types');
         });
     }
