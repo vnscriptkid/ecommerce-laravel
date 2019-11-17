@@ -4,6 +4,7 @@ namespace Tests\Unit\Models;
 
 use App\Models\Product;
 use App\Models\ProductVariation;
+use App\Models\ProductVariationType;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -20,5 +21,15 @@ class ProductVariationTest extends TestCase
 
         $this->assertInstanceOf(Product::class, $variation->product);
         $this->assertEquals($variation->product->name, $product->name);
+    }
+
+    public function test_it_has_a_variation_type()
+    {
+        $variation = factory(ProductVariation::class)->create([
+            'product_id' => factory(Product::class)->create()->id,
+            'product_variation_type_id' => factory(ProductVariationType::class)->create()->id
+        ]);
+
+        $this->assertInstanceOf(ProductVariationType::class, $variation->type);
     }
 }
