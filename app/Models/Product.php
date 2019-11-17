@@ -5,6 +5,7 @@ namespace App\Models;
 use App\Scoping\Contracts\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Support\Arr;
 
 class Product extends Model
 {
@@ -38,13 +39,18 @@ class Product extends Model
 
     public function scopeOfScopes(Builder $builder, array $scopes)
     {
-        foreach ($scopes as $name => $scope) {
+        foreach ($this->limitScopes($scopes) as $name => $scope) {
             $value = request()->input($name);
-            if (is_null($value) || !$scope instanceof Scope) {
+            if (!$scope instanceof Scope) {
                 continue;
             }
             $scope->apply($builder, $value);
         }
         return $builder;
+    }
+
+    protected function limitScopes(array $scopes)
+    {
+        return Arr::only($scopes, array_keys(request()->all()));
     }
 }
