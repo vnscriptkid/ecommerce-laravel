@@ -26,7 +26,7 @@ class ProductShowTest extends TestCase
             'data' => [
                 'name' => $product->name,
                 'slug' => $product->slug,
-                'price' => $product->price,
+                'price' => $product->formattedPrice,
                 'description' => $product->description,
                 'variations' => []
             ]

@@ -30,7 +30,7 @@ class ProductIndexTest extends TestCase
                 [
                     'name' => $product->name,
                     'slug' => $product->slug,
-                    'price' => $product->price,
+                    'price' => $product->formattedPrice,
                 ]
             ]
         ]);
