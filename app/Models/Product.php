@@ -2,33 +2,20 @@
 
 namespace App\Models;
 
+use App\Models\Traits\HasPrice;
 use App\Scoping\Contracts\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Arr;
-use Money\Formatter\IntlMoneyFormatter;
-use Money\Currencies\ISOCurrencies;
-use Money\Money;
-use Money\Currency;
-use NumberFormatter;
 
 class Product extends Model
 {
+    use HasPrice;
+
     public function getRouteKeyName()
     {
         // api/products/{slug}
         return 'slug';
-    }
-
-    public function getFormattedPriceAttribute()
-    {
-        $formatter = new IntlMoneyFormatter(
-            new NumberFormatter('en_GB', NumberFormatter::CURRENCY),
-            new ISOCurrencies()
-        );
-        return $formatter->format(
-            new Money($this->price, new Currency('GBP'))
-        );
     }
 
     // many to many
