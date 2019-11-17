@@ -39,4 +39,13 @@ class ProductTest extends TestCase
         $this->assertInstanceOf(ProductVariation::class, $product->variations->first());
         $this->assertEquals($product->variations->count(), 1);
     }
+
+    public function test_it_should_format_price()
+    {
+        // £1.00
+        $product = factory(Product::class)->create([
+            'price' => 100
+        ]);
+        $this->assertEquals($product->formattedPrice, '£1.00');
+    }
 }
