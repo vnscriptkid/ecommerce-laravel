@@ -15,6 +15,11 @@ class ProductVariation extends Model
         return is_null($value) ? $this->product->price : $value;
     }
 
+    public function priceVaries()
+    {
+        return $this->price !== $this->product->price;
+    }
+
     // many to one
     public function product()
     {
