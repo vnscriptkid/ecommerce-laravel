@@ -4,8 +4,8 @@ namespace Tests\Unit\Models;
 
 use App\Models\Category;
 use App\Models\Product;
+use App\Models\ProductVariation;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
 
 class ProductTest extends TestCase
@@ -27,5 +27,16 @@ class ProductTest extends TestCase
 
         $this->assertEquals($product->categories->count(), 1);
         $this->assertInstanceOf(Category::class, $product->categories->first());
+    }
+
+    public function test_it_has_many_variations()
+    {
+        $product = factory(Product::class)->create();
+        $product->variations()->save(
+            factory(ProductVariation::class)->make()
+        );
+
+        $this->assertInstanceOf(ProductVariation::class, $product->variations->first());
+        $this->assertEquals($product->variations->count(), 1);
     }
 }
