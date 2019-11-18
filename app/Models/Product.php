@@ -30,6 +30,18 @@ class Product extends Model
         return $this->hasMany(ProductVariation::class);
     }
 
+    public function stockCount()
+    {
+        return $this->variations->sum(function ($variation) {
+            return $variation->stockCount();
+        });
+    }
+
+    public function inStock()
+    {
+        return $this->stockCount() > 0;
+    }
+
     // filter all product with matching category name
     public function scopeOfCategory(Builder $builder, string $categoryName = null)
     {
