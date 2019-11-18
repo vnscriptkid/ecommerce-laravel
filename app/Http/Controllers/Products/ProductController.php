@@ -14,7 +14,7 @@ class ProductController extends Controller
     {
         // TODO: optional filter /api/products?category=electric
         return ProductIndexResource::collection(
-            Product::ofScopes($this->scopes())
+            Product::with('variations.stock')->ofScopes($this->scopes())
                 ->paginate(10)
         );
     }
