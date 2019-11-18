@@ -29,6 +29,7 @@ class ProductController extends Controller
     // api/products/sony-tv-XYZ
     public function show(Product $product)
     {
+        $product->load(['variations.stock', 'variations.type', 'variations.product']);
         return new ProductResource($product);
     }
 }
