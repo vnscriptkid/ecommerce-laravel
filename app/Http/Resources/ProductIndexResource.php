@@ -11,7 +11,9 @@ class ProductIndexResource extends JsonResource
         return [
             'name' => $this->name,
             'slug' => $this->slug,
-            'price' => $this->formattedPrice
+            'price' => $this->formattedPrice,
+            'stock_count' => $this->stockCount(),
+            'in_stock' => $this->inStock()
         ];
     }
 }

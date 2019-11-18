@@ -31,6 +31,8 @@ class ProductIndexTest extends TestCase
                     'name' => $product->name,
                     'slug' => $product->slug,
                     'price' => $product->formattedPrice,
+                    'stock_count' => $product->stockCount(),
+                    'in_stock' => $product->inStock()
                 ]
             ]
         ]);

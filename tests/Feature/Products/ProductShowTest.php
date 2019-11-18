@@ -28,6 +28,8 @@ class ProductShowTest extends TestCase
                 'slug' => $product->slug,
                 'price' => $product->formattedPrice,
                 'description' => $product->description,
+                'stock_count' => $product->stockCount(),
+                'in_stock' => $product->inStock(),
                 'variations' => []
             ]
         ]);
