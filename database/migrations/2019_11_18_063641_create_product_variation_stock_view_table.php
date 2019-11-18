@@ -14,7 +14,21 @@ class CreateProductVariationStockViewTable extends Migration
      */
     public function up()
     {
-        DB::statement("
+        // dropView is required, because Laravel only drops tables when doing a fresh migration
+        dump('up view');
+        DB::statement($this->dropView());
+        DB::statement($this->createView());
+    }
+
+    public function down()
+    {
+        dump('down view');
+        DB::statement($this->dropView());
+    }
+
+    public function createView()
+    {
+        return "
             CREATE VIEW product_variation_stock_view AS
             SELECT
                 product_variations.product_id,
@@ -40,16 +54,11 @@ class CreateProductVariationStockViewTable extends Migration
                 FROM order_lines
                 GROUP BY order_lines.product_variation_id
             ) AS order_lines_grouped USING (id);
-        ");
+        ";
     }
 
-    /**
-     * Reverse the migrations.
-     *
-     * @return void
-     */
-    public function down()
+    public function dropView()
     {
-        DB::statement("DROP VIEW IF EXISTS product_variation_stock_view;");
+        return "DROP VIEW IF EXISTS product_variation_stock_view;";
     }
 }
