@@ -37,4 +37,49 @@ class CartTest extends TestCase
             'quantity' => 20
         ]);
     }
+
+    public function test_it_should_update_quantity_of_cart_item()
+    {
+        $variation = factory(ProductVariation::class)->create();
+
+        $user = factory(User::class)->create();
+        $cart = new Cart($user);
+
+        $items = [
+            [
+                'id' => $variation->id,
+                'quantity' => 20
+            ]
+        ];
+
+        $cart->add($items);
+        $cart->updateItem($variation->id, 40);
+
+        $this->assertEquals(DB::table('carts')->count(), 1);
+        $this->assertDatabaseHas('carts', [
+            'user_id' => $user->id,
+            'product_variation_id' => $variation->id,
+            'quantity' => 40
+        ]);
+    }
+
+    public function test_it_should_delete_item_from_cart()
+    {
+        $variation = factory(ProductVariation::class)->create();
+
+        $user = factory(User::class)->create();
+        $cart = new Cart($user);
+
+        $items = [
+            [
+                'id' => $variation->id,
+                'quantity' => 20
+            ]
+        ];
+
+        $cart->add($items);
+        $cart->deleteItem($variation->id);
+
+        $this->assertEquals(DB::table('carts')->count(), 0);
+    }
 }
