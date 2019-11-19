@@ -25,8 +25,19 @@ class Cart
             ->keyBy('id')
             ->map(function ($variation) {
                 return [
-                    'quantity' => $variation['quantity']
+                    'quantity' => $variation['quantity'] + $this->getCurrentQuantityOfVariation($variation['id'])
                 ];
             });
+    }
+
+    protected function getCurrentQuantityOfVariation($id)
+    {
+        $foundVariation = $this->user->cart->find($id);
+
+        if ($foundVariation) {
+            return $foundVariation->pivot->quantity;
+        }
+
+        return 0;
     }
 }

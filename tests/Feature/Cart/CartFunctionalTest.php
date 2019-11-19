@@ -140,4 +140,35 @@ class CartFunctionalTest extends TestCase
             'product_variation_id' => $variation->id
         ]);
     }
+
+    public function test_it_should_add_quantity_to_current_quantity_of_variation()
+    {
+        $variation = factory(ProductVariation::class)->create();
+
+        $user = factory(User::class)->create();
+
+        $user->cart()->attach([
+            $variation->id => ['quantity' => 1]
+        ]);
+
+        $data = [
+            'products' => [
+                ['id' => $variation->id, 'quantity' => 999]
+            ]
+        ];
+
+        $response = $this->jsonAs(
+            $user,
+            'post',
+            '/api/cart',
+            $data
+        );
+
+        $response->assertStatus(200);
+        $this->assertDatabaseHas('carts', [
+            'quantity' => 1000,
+            'user_id' => $user->id,
+            'product_variation_id' => $variation->id
+        ]);
+    }
 }
