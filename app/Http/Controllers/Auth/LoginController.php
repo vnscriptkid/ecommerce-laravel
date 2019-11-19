@@ -17,7 +17,7 @@ class LoginController extends Controller
         if (!$token = auth()->attempt($credentials)) {
             return response()->json([
                 'message' => 'Invalid credentials.'
-            ], 401);
+            ], 422);
         }
 
         return (new PrivateUserResource($request->user()))
