@@ -2,6 +2,7 @@
 
 namespace App\Cart;
 
+use App\Models\ProductVariation;
 use App\Models\User;
 
 class Cart
@@ -17,6 +18,19 @@ class Cart
         $cartItems = $this->transformItems($items);
 
         $this->user->cart()->syncWithoutDetaching($cartItems);
+    }
+
+    public function updateItem($variationId, $quantity)
+    {
+        // in case $variationId does not exist, do not throw error here
+        $this->user->cart()->updateExistingPivot($variationId, [
+            'quantity' => $quantity
+        ]);
+    }
+
+    public function deleteItem($variationId)
+    {
+        $this->user->cart()->detach($variationId);
     }
 
     protected function transformItems(array $items)
