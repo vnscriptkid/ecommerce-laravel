@@ -82,4 +82,19 @@ class CartTest extends TestCase
 
         $this->assertEquals(DB::table('carts')->count(), 0);
     }
+
+    public function test_it_can_empty_the_whole_cart()
+    {
+        $user = factory(User::class)->create();
+        $user->cart()->attach([
+            factory(ProductVariation::class)->create()->id => ['quantity' => 2],
+            factory(ProductVariation::class)->create()->id => ['quantity' => 3],
+        ]);
+
+        $this->assertEquals($user->cart->count(), 2);
+        $cart = new Cart($user);
+
+        $cart->empty();
+        $this->assertEquals($user->fresh()->cart->count(), 0);
+    }
 }

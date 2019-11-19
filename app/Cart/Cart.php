@@ -33,6 +33,11 @@ class Cart
         $this->user->cart()->detach($variationId);
     }
 
+    public function empty()
+    {
+        $this->user->cart()->detach();
+    }
+
     protected function transformItems(array $items)
     {
         return collect($items)
