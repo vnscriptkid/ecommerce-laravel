@@ -65,4 +65,11 @@ class User extends Authenticatable implements JWTSubject
             $user->password = bcrypt($user->password);
         });
     }
+
+    // relationship
+    public function cart()
+    {
+        return $this->belongsToMany(ProductVariation::class, 'carts')
+            ->withPivot('quantity');
+    }
 }
