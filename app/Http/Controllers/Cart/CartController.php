@@ -8,14 +8,13 @@ use App\Http\Requests\Cart\StoreCartRequest;
 
 class CartController extends Controller
 {
-    public function __construct(Cart $cart)
+    public function __construct()
     {
         $this->middleware('auth:api');
-        $this->cart = $cart;
     }
 
-    public function store(StoreCartRequest $request)
+    public function store(StoreCartRequest $request, Cart $cart)
     {
-        $this->cart->add($request->products);
+        $cart->add($request->products);
     }
 }
