@@ -11,7 +11,7 @@ class Cart
         $this->user = $user;
     }
 
-    public function cart(array $items = [])
+    public function add(array $items = [])
     {
         // items : [ { id, quantity } ]
         $cartItems = $this->transformItems($items);
