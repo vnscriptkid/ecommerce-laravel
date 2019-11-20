@@ -6,6 +6,7 @@ use App\Cart\Cart;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Cart\StoreCartRequest;
 use App\Http\Requests\Cart\UpdateCartItemRequest;
+use App\Http\Resources\CartResource;
 use App\Models\ProductVariation;
 use Illuminate\Http\Request;
 
@@ -29,5 +30,13 @@ class CartController extends Controller
     public function destroy(ProductVariation $productVariation, Cart $cart)
     {
         $cart->deleteItem($productVariation->id);
+    }
+
+    // GET /api/cart
+    public function index(Request $request)
+    {
+        $user = $request->user()->load(['cart.product', 'cart.stock', 'cart.product.variations.stock']);
+
+        return new CartResource($user->cart);
     }
 }
