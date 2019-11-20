@@ -30,6 +30,9 @@ class CartIndexTest extends TestCase
         $reponse->assertExactJson([
             'data' => [
                 'products' => []
+            ],
+            'meta' => [
+                'empty' => true
             ]
         ]);
     }

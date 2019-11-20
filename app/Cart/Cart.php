@@ -28,6 +28,11 @@ class Cart
         ]);
     }
 
+    public function isEmpty()
+    {
+        return $this->user->cart->sum('pivot.quantity') === 0;
+    }
+
     public function deleteItem($variationId)
     {
         $this->user->cart()->detach($variationId);

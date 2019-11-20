@@ -33,10 +33,19 @@ class CartController extends Controller
     }
 
     // GET /api/cart
-    public function index(Request $request)
+    public function index(Request $request, Cart $cart)
     {
         $user = $request->user()->load(['cart.product', 'cart.stock', 'cart.product.variations.stock']);
 
-        return new CartResource($user->cart);
+        return (new CartResource($user->cart))->additional([
+            'meta' => $this->meta($cart)
+        ]);
+    }
+
+    protected function meta($cart)
+    {
+        return [
+            'empty' => $cart->isEmpty()
+        ];
     }
 }
