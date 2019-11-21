@@ -20,6 +20,8 @@ class CartController extends Controller
     public function store(StoreCartRequest $request, Cart $cart)
     {
         $cart->add($request->products);
+
+        $cart->sync();
     }
 
     public function update(UpdateCartItemRequest $request, ProductVariation $productVariation, Cart $cart)
