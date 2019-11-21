@@ -2,6 +2,7 @@
 
 namespace Tests\Unit\Models;
 
+use App\Models\Address;
 use App\Models\ProductVariation;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -70,5 +71,17 @@ class UserTest extends TestCase
         // Assert
         $this->assertEquals($user->cart->count(), 1);
         $this->assertEquals($user->cart->first()->pivot->quantity, 50);
+    }
+
+    public function test_user_has_many_addresses()
+    {
+        $user = factory(User::class)->create();
+
+        $user->addresses()->saveMany(
+            factory(Address::class, 3)->make()
+        );
+
+        $this->assertInstanceOf(Address::class, $user->addresses->first());
+        $this->assertEquals($user->addresses->count(), 3);
     }
 }
