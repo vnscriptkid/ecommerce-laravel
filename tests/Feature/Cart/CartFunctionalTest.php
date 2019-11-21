@@ -3,6 +3,7 @@
 namespace Tests\Feature\Cart;
 
 use App\Models\ProductVariation;
+use App\Models\Stock;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -149,6 +150,11 @@ class CartFunctionalTest extends TestCase
 
         $user->cart()->attach([
             $variation->id => ['quantity' => 1]
+        ]);
+
+        factory(Stock::class)->create([
+            'quantity' => 1000,
+            'product_variation_id' => $variation->id
         ]);
 
         $data = [
