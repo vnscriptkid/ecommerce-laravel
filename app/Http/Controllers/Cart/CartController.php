@@ -35,6 +35,9 @@ class CartController extends Controller
     // GET /api/cart
     public function index(Request $request, Cart $cart)
     {
+
+        $cart->sync();
+
         $user = $request->user()->load(['cart.product', 'cart.stock', 'cart.product.variations.stock']);
 
         return (new CartResource($user->cart))->additional([
@@ -45,7 +48,9 @@ class CartController extends Controller
     protected function meta($cart)
     {
         return [
-            'empty' => $cart->isEmpty()
+            'empty' => $cart->isEmpty(),
+            'subTotal' => $cart->subTotal()->format(),
+            'changed' => $cart->hasChanged()
         ];
     }
 }

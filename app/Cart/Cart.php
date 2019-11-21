@@ -7,9 +7,13 @@ use App\Models\User;
 
 class Cart
 {
+    protected $user;
+    protected $changed;
+
     public function __construct(User $user)
     {
         $this->user = $user;
+        $this->changed = false;
     }
 
     public function add(array $items = [])
@@ -41,6 +45,46 @@ class Cart
     public function empty()
     {
         $this->user->cart()->detach();
+    }
+
+    // the total without taxes and shipping fees
+    public function subTotal()
+    {
+        $subTotal = $this->user->cart->sum(function ($item) {
+            return $item->price * $item->pivot->quantity;
+        });
+        return new Money($subTotal);
+    }
+
+    // sync cart with stocks
+    public function sync()
+    {
+        // loop through all items in cart
+        $dataToSync = [];
+        // dd($this->user->cart->toArray());
+        $this->user->cart->each(function ($variation) use (&$dataToSync) {
+            // check ordered quantity vs left in stock
+            $leftInStock = $variation->stockCount();
+            $orderedQuantity = $variation->pivot->quantity;
+            // (>) => reduce to stock number
+            if ($orderedQuantity > $leftInStock) {
+                $dataToSync[$variation->id] = ['quantity' => $leftInStock];
+                //another way
+                // $variation->pivot->update([ 'quantity' => $leftInStock]);
+            }
+        });
+
+        if (count($dataToSync) > 0) {
+            // batch sync to reduce # of queries
+            $this->changed = true;
+            return $this->user->cart()->syncWithoutDetaching($dataToSync);
+        }
+        return false;
+    }
+
+    public function hasChanged()
+    {
+        return $this->changed;
     }
 
     protected function transformItems(array $items)
