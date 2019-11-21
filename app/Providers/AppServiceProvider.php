@@ -15,7 +15,7 @@ class AppServiceProvider extends ServiceProvider
     public function register()
     {
         $this->app->singleton(Cart::class, function ($app) {
-            return new Cart($app->auth->user());
+            return new Cart($app->auth->user()->load(['cart.stock']));
         });
     }
 

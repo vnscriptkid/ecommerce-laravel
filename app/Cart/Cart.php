@@ -59,14 +59,12 @@ class Cart
     // sync cart with stocks
     public function sync()
     {
-        // loop through all items in cart
         $dataToSync = [];
-        // dd($this->user->cart->toArray());
+
         $this->user->cart->each(function ($variation) use (&$dataToSync) {
-            // check ordered quantity vs left in stock
             $leftInStock = $variation->stockCount();
             $orderedQuantity = $variation->pivot->quantity;
-            // (>) => reduce to stock number
+
             if ($orderedQuantity > $leftInStock) {
                 $dataToSync[$variation->id] = ['quantity' => $leftInStock];
                 //another way
