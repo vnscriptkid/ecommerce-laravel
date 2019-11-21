@@ -68,7 +68,8 @@ class CartIndexTest extends TestCase
                         'in_stock',
                         'product',
                         'quantity',
-                        'total'
+                        'total',
+                        'type'
                     ]
                 ]
             ]

@@ -19,7 +19,8 @@ class ProductVariationResource extends JsonResource
             'price' => $this->formattedPrice,
             'price_varies' => $this->priceVaries(),
             'stock_count' => $this->stockCount(),
-            'in_stock' => $this->inStock()
+            'in_stock' => $this->inStock(),
+            'type' => $this->type->name ?? null
         ];
     }
 }
