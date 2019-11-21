@@ -2,7 +2,9 @@
 
 namespace Tests\Feature\Cart;
 
+use App\Cart\Money;
 use App\Models\ProductVariation;
+use App\Models\Stock;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -32,7 +34,9 @@ class CartIndexTest extends TestCase
                 'products' => []
             ],
             'meta' => [
-                'empty' => true
+                'empty' => true,
+                'subTotal' => (new Money(0))->format(),
+                'changed' => false
             ]
         ]);
     }
@@ -64,10 +68,80 @@ class CartIndexTest extends TestCase
                         'in_stock',
                         'product',
                         'quantity',
-                        'subTotal'
+                        'total'
                     ]
                 ]
             ]
         ]);
+    }
+
+    public function test_it_should_return_correct_formatted_subTotal_in_meta_in_case_empty_cart()
+    {
+        $user = factory(User::class)->create();
+
+        $reponse = $this->jsonAs(
+            $user,
+            'get',
+            '/api/cart'
+        );
+
+        $reponse->assertStatus(200)
+            ->assertJsonFragment([
+                'subTotal' => '£0.00'
+            ]);
+    }
+
+    public function test_it_should_return_correct_formatted_subTotal_in_meta_in_case_multi_items()
+    {
+        $user = factory(User::class)->create();
+
+        $variation_1 = factory(ProductVariation::class)->create(['price' => 120]);
+        $variation_2 = factory(ProductVariation::class)->create(['price' => 30]);
+
+        $user->cart()->attach([
+            $variation_1->id => ['quantity' => 2],
+            $variation_2->id => ['quantity' => 2],
+        ]);
+
+        factory(Stock::class)->create(['product_variation_id' => $variation_1->id, 'quantity' => 2]);
+        factory(Stock::class)->create(['product_variation_id' => $variation_2->id, 'quantity' => 2]);
+
+        $reponse = $this->jsonAs(
+            $user,
+            'get',
+            '/api/cart'
+        );
+
+        $reponse->assertStatus(200);
+
+        $this->assertEquals($reponse->json('meta')['subTotal'], '£3.00');
+    }
+
+    public function test_it_should_auto_reduce_quantity_of_item_to_quantity_in_stock()
+    {
+        $user = factory(User::class)->create();
+
+        $variation_1 = factory(ProductVariation::class)->create(['price' => 120]);
+        $variation_2 = factory(ProductVariation::class)->create(['price' => 30]);
+
+        $user->cart()->attach([
+            $variation_1->id => ['quantity' => 2],
+            $variation_2->id => ['quantity' => 2],
+        ]);
+
+        factory(Stock::class)->create(['product_variation_id' => $variation_1->id, 'quantity' => 1]);
+        factory(Stock::class)->create(['product_variation_id' => $variation_2->id, 'quantity' => 1]);
+
+        $reponse = $this->jsonAs(
+            $user,
+            'get',
+            '/api/cart'
+        );
+
+        $reponse->assertStatus(200)
+            ->assertJsonFragment([
+                'changed' => true,
+                'subTotal' => '£1.50'
+            ]);
     }
 }

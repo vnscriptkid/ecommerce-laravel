@@ -3,7 +3,9 @@
 namespace Tests\Unit\Cart;
 
 use App\Cart\Cart;
+use App\Cart\Money;
 use App\Models\ProductVariation;
+use App\Models\Stock;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -131,5 +133,56 @@ class CartTest extends TestCase
         );
 
         $this->assertFalse($cart->isEmpty());
+    }
+
+    public function it_calculates_subTotal_correctly()
+    {
+        $cart = new Cart(
+            $user = factory(User::class)->create()
+        );
+
+        $user->cart()->attach(
+            factory(ProductVariation::class)->create(['price' => 200]),
+            ['quantity' => 2]
+        );
+
+        $this->assertInstanceOf(Money::class, $cart->subTotal());
+        $this->assertEquals($cart->subTotal()->amount(), 400);
+    }
+
+    public function it_calculates_subTotal_multi_items_correctly()
+    {
+        $cart = new Cart(
+            $user = factory(User::class)->create()
+        );
+
+        $user->cart()->attach([
+            factory(ProductVariation::class)->create(['price' => 200])->id => ['quantity' => 2],
+            factory(ProductVariation::class)->create(['price' => 150])->id => ['quantity' => 1]
+        ]);
+
+        $this->assertInstanceOf(Money::class, $cart->subTotal());
+        $this->assertEquals($cart->subTotal()->amount(), 550);
+    }
+
+    public function it_should_restrict_maximum_quantity_of_item_in_cart_to_the_quantity_left_in_stock()
+    {
+        $cart = new Cart(
+            $user = factory(User::class)->create()
+        );
+
+        $user->cart()->attach([
+            ($variation = factory(ProductVariation::class)->create(['price' => 200]))->id => ['quantity' => 2],
+        ]);
+
+        factory(Stock::class)->create([
+            'product_variation_id' => $variation->id,
+            'quantity' => 1
+        ]);
+
+        $cart->sync();
+        $this->assertEquals($cart->hasChanged(), true);
+        $this->assertEquals($cart->subTotal()->amount(), 100);
+        $this->assertEquals($user->cart->first()->pivot->quantity, 1);
     }
 }
