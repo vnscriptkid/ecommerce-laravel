@@ -15,6 +15,8 @@ class AddressController extends Controller
 
     public function index(Request $request)
     {
-        return AddressResource::collection($request->user()->addresses);
+        $user = $request->user();
+        $user->load(['addresses.country']);
+        return AddressResource::collection($user->addresses);
     }
 }
