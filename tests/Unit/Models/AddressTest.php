@@ -33,4 +33,21 @@ class AddressTest extends TestCase
         $this->assertInstanceOf(Country::class, $address->country);
         $this->assertEquals($address->country->code, $country->code);
     }
+
+    public function test_it_un_default_other_addresses_of_same_user_if_new_one_default_to_true()
+    {
+        $oldAddress = factory(Address::class)->create([
+            'user_id' => ($user = factory(User::class)->create())->id,
+            'default' => true
+        ]);
+
+        $newAddress = factory(Address::class)->create([
+            'user_id' => $user->id,
+            'default' => true
+        ]);
+
+        $this->assertEquals($user->addresses->count(), 2);
+        $this->assertEquals($oldAddress->fresh()->default, 0);
+        $this->assertEquals($newAddress->fresh()->default, 1);
+    }
 }
