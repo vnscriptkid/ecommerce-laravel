@@ -18,7 +18,8 @@ class StoreAddressRequest extends FormRequest
             'address_1' => 'required|string',
             'city' => 'required|string',
             'postal_code' => 'required|string',
-            'country_id' => 'required|integer|exists:countries,id'
+            'country_id' => 'required|integer|exists:countries,id',
+            'default' => 'nullable|boolean'
         ];
     }
 }
