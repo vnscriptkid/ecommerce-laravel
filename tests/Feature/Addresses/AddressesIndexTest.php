@@ -41,6 +41,7 @@ class AddressIndexTest extends TestCase
                 "city" => $address->city,
                 "postal_code" => $address->postal_code,
                 "country" => [
+                    "id" => $address->country->id,
                     "name" => $address->country->name,
                     "code" => $address->country->code
                 ]

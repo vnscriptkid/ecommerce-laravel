@@ -79,6 +79,7 @@ class AddressesStoreTest extends TestCase
         $response->assertStatus(201)
             ->assertJsonFragment([
                 'country' => [
+                    'id' => $country->id,
                     'name' => $country->name,
                     'code' => $country->code
                 ]
