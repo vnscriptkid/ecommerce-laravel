@@ -15,6 +15,8 @@ class AddressShippingController extends Controller
 
     public function index(Address $address)
     {
+        $this->authorize('view', $address);
+
         return ShippingMethodResource::collection($address->country->shippingMethods);
     }
 }
