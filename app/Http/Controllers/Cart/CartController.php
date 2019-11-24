@@ -37,7 +37,6 @@ class CartController extends Controller
     // GET /api/cart
     public function index(Request $request, Cart $cart)
     {
-
         $cart->sync();
 
         $user = $request->user()->load([
@@ -48,15 +47,16 @@ class CartController extends Controller
         ]);
 
         return (new CartResource($user->cart))->additional([
-            'meta' => $this->meta($cart)
+            'meta' => $this->meta($cart, $request)
         ]);
     }
 
-    protected function meta($cart)
+    protected function meta($cart, Request $request)
     {
         return [
             'empty' => $cart->isEmpty(),
             'subTotal' => $cart->subTotal()->format(),
+            'total' => $cart->total($request->shipping_method_id)->format(),
             'changed' => $cart->hasChanged()
         ];
     }

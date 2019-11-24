@@ -3,6 +3,7 @@
 namespace App\Cart;
 
 use App\Models\ProductVariation;
+use App\Models\ShippingMethod;
 use App\Models\User;
 
 class Cart
@@ -54,6 +55,17 @@ class Cart
             return $item->price * $item->pivot->quantity;
         });
         return new Money($subTotal);
+    }
+
+    public function total($shippingMethodId)
+    {
+
+        if ($shippingMethodId && $shippingMethod = ShippingMethod::find($shippingMethodId)) {
+            return $this->subTotal()->add(
+                $shippingMethod->getMoneyObj()
+            );
+        }
+        return $this->subTotal();
     }
 
     // sync cart with stocks

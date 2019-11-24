@@ -10,4 +10,9 @@ trait HasPrice
     {
         return (new Money($this->price))->format();
     }
+
+    public function getMoneyObj()
+    {
+        return new Money($this->price);
+    }
 }

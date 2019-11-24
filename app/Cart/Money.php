@@ -31,4 +31,15 @@ class Money
     {
         return $this->money->getAmount();
     }
+
+    public function add(Money $moneyWrapper)
+    {
+        $this->money = $this->money->add($this->instance($moneyWrapper));
+        return $this;
+    }
+
+    public function instance(Money $obj)
+    {
+        return $obj->money;
+    }
 }

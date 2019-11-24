@@ -4,6 +4,7 @@ namespace Tests\Feature\Cart;
 
 use App\Cart\Money;
 use App\Models\ProductVariation;
+use App\Models\ShippingMethod;
 use App\Models\Stock;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -36,7 +37,8 @@ class CartIndexTest extends TestCase
             'meta' => [
                 'empty' => true,
                 'subTotal' => (new Money(0))->format(),
-                'changed' => false
+                'changed' => false,
+                'total' => (new Money(0))->format()
             ]
         ]);
     }
@@ -144,5 +146,51 @@ class CartIndexTest extends TestCase
                 'changed' => true,
                 'subTotal' => '£1.50'
             ]);
+    }
+
+    public function test_it_show_correct_total_with_shipping_price()
+    {
+        $user = factory(User::class)->create();
+
+        $variation = factory(ProductVariation::class)->create(['price' => 200]);
+
+        $user->cart()->attach([
+            $variation->id => ['quantity' => 2],
+        ]);
+
+        factory(Stock::class)->create(['product_variation_id' => $variation->id, 'quantity' => 2]);
+
+        $shippingMethod = factory(ShippingMethod::class)->create(['price' => 20]);
+
+        $response = $this->jsonAs(
+            $user,
+            'get',
+            "/api/cart?shipping_method_id={$shippingMethod->id}"
+        );
+
+        $response->assertStatus(200);
+        $this->assertEquals($response->json('meta')['total'], '£4.20');
+    }
+
+    public function test_it_show_correct_total_without_shipping_price()
+    {
+        $user = factory(User::class)->create();
+
+        $variation = factory(ProductVariation::class)->create(['price' => 200]);
+
+        $user->cart()->attach([
+            $variation->id => ['quantity' => 2],
+        ]);
+
+        factory(Stock::class)->create(['product_variation_id' => $variation->id, 'quantity' => 2]);
+
+        $response = $this->jsonAs(
+            $user,
+            'get',
+            "/api/cart"
+        );
+
+        $response->assertStatus(200);
+        $this->assertEquals($response->json('meta')['total'], '£4.00');
     }
 }

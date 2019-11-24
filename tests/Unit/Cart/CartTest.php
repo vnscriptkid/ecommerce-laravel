@@ -5,6 +5,7 @@ namespace Tests\Unit\Cart;
 use App\Cart\Cart;
 use App\Cart\Money;
 use App\Models\ProductVariation;
+use App\Models\ShippingMethod;
 use App\Models\Stock;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -184,5 +185,43 @@ class CartTest extends TestCase
         $this->assertEquals($cart->hasChanged(), true);
         $this->assertEquals($cart->subTotal()->amount(), 100);
         $this->assertEquals($user->cart->first()->pivot->quantity, 1);
+    }
+
+    public function test_it_can_calculate_total_with_non_exist_shipping_method_id()
+    {
+        $cart = new Cart(
+            $user = factory(User::class)->create()
+        );
+
+        $variation = factory(ProductVariation::class)->create([
+            'price' => 600
+        ]);
+
+        $user->cart()->attach([
+            $variation->id => ['quantity' => 5]
+        ]);
+
+        $this->assertEquals($cart->total(99)->amount(), 3000);
+    }
+
+    public function test_it_can_calculate_total_with_shipping_method()
+    {
+        $cart = new Cart(
+            $user = factory(User::class)->create()
+        );
+
+        $variation = factory(ProductVariation::class)->create([
+            'price' => 600
+        ]);
+
+        $user->cart()->attach([
+            $variation->id => ['quantity' => 5]
+        ]);
+
+        $shippingMethod = factory(ShippingMethod::class)->create([
+            'price' => 200
+        ]);
+
+        $this->assertEquals($cart->total($shippingMethod->id)->amount(), 3200);
     }
 }
