@@ -6,6 +6,8 @@ use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
 {
+    protected $fillable = ['address_id', 'shipping_method_id', 'user_id'];
+
     const PENDING = 'pending';
     const PROCESSING = 'processing';
     const PAYMENT_FAILED = 'payment_failed';
