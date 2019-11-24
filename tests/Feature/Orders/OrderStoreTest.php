@@ -1,0 +1,81 @@
+<?php
+
+namespace Tests\Feature\Orders;
+
+use App\Models\Address;
+use App\Models\ShippingMethod;
+use App\Models\User;
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Tests\TestCase;
+
+class OrderStoreTest extends TestCase
+{
+    use RefreshDatabase;
+
+    public function test_it_requires_authentication()
+    {
+        $response = $this->json('post', '/api/orders');
+
+        $response->assertStatus(401);
+    }
+
+    public function test_it_fails_at_validation_if_no_data_sent()
+    {
+        $response = $this->jsonAs(
+            factory(User::class)->create(),
+            'post',
+            '/api/orders'
+        );
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['address_id', 'shipping_method_id']);
+    }
+
+    public function test_it_fails_at_validation_if_address_id_is_not_existed()
+    {
+        $response = $this->jsonAs(
+            factory(User::class)->create(),
+            'post',
+            '/api/orders',
+            [
+                'address_id' => 1,
+                'shipping_method_id' => factory(ShippingMethod::class)->create()->id
+            ]
+        );
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['address_id']);
+    }
+
+    public function test_it_fails_at_validation_if_shipping_method_id_is_not_existed()
+    {
+        $response = $this->jsonAs(
+            $user = factory(User::class)->create(),
+            'post',
+            '/api/orders',
+            [
+                'address_id' => factory(Address::class)->create(['user_id' => $user->id])->id,
+                'shipping_method_id' => 1
+            ]
+        );
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['shipping_method_id']);
+    }
+
+    public function test_it_fails_at_validation_if_address_not_belongs_to_logged_user()
+    {
+        $response = $this->jsonAs(
+            factory(User::class)->create(),
+            'post',
+            '/api/orders',
+            [
+                'address_id' => factory(Address::class)->create()->id,
+                'shipping_method_id' => factory(ShippingMethod::class)->create()->id
+            ]
+        );
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['address_id']);
+    }
+}

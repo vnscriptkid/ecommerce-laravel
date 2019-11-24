@@ -6,6 +6,7 @@ Route::resource('categories', 'Categories\CategoryController');
 Route::resource('products', 'Products\ProductController');
 Route::resource('addresses', 'Addresses\AddressController');
 Route::resource('countries', 'Countries\CountryController');
+Route::resource('orders', 'Orders\OrderController');
 Route::resource('addresses.shippingMethods', 'Addresses\AddressShippingController');
 Route::resource('cart', 'Cart\CartController')->parameters([
     'cart' => 'productVariation'
