@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers\Orders;
 
+use App\Cart\Cart;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Orders\OrderStoreRequest;
 use App\Models\Order;
@@ -14,10 +15,13 @@ class OrderController extends Controller
         $this->middleware(['auth:api']);
     }
 
-    public function store(OrderStoreRequest $request)
+    public function store(OrderStoreRequest $request, Cart $cart)
     {
         $request->user()->orders()->create(
-            $request->validated()
+            array_merge(
+                $request->validated(),
+                ['sub_total' => $cart->subTotal()->amount()]
+            )
         );
     }
 }

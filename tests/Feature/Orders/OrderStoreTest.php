@@ -3,6 +3,7 @@
 namespace Tests\Feature\Orders;
 
 use App\Models\Address;
+use App\Models\Country;
 use App\Models\ShippingMethod;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -81,11 +82,11 @@ class OrderStoreTest extends TestCase
     public function test_it_fails_at_validation_if_shipping_method_not_ready_for_the_address()
     {
         $response = $this->jsonAs(
-            factory(User::class)->create(),
+            $user = factory(User::class)->create(),
             'post',
             '/api/orders',
             [
-                'address_id' => factory(Address::class)->create()->id,
+                'address_id' => factory(Address::class)->create(['user_id' => $user->id])->id,
                 'shipping_method_id' => factory(ShippingMethod::class)->create()->id
             ]
         );
@@ -97,5 +98,35 @@ class OrderStoreTest extends TestCase
                     'It is not available for the address'
                 ]
             ]);
+    }
+
+    public function test_it_create_an_order()
+    {
+        $user = factory(User::class)->create();
+
+        $country = factory(Country::class)->create();
+
+        $country->shippingMethods()->attach(
+            $shippingMethod = factory(ShippingMethod::class)->create()
+        );
+
+        $address = factory(Address::class)->create(['user_id' => $user->id, 'country_id' => $country->id]);
+
+        $response = $this->jsonAs(
+            $user,
+            'post',
+            '/api/orders',
+            [
+                'address_id' => $address->id,
+                'shipping_method_id' => $shippingMethod->id
+            ]
+        );
+
+        $response->assertStatus(200);
+        $this->assertDatabaseHas('orders', [
+            'address_id' => $address->id,
+            'shipping_method_id' => $shippingMethod->id,
+            'sub_total' => 0
+        ]);
     }
 }

@@ -12,6 +12,7 @@ $factory->define(Order::class, function (Faker $faker) {
     return [
         'user_id' => factory(User::class)->create()->id,
         'address_id' => factory(Address::class)->create()->id,
-        'shipping_method_id' => factory(ShippingMethod::class)->create()->id
+        'shipping_method_id' => factory(ShippingMethod::class)->create()->id,
+        'sub_total' => $faker->randomNumber()
     ];
 });
