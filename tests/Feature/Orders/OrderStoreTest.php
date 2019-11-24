@@ -43,8 +43,7 @@ class OrderStoreTest extends TestCase
             ]
         );
 
-        $response->assertStatus(422)
-            ->assertJsonValidationErrors(['address_id']);
+        $response->assertStatus(404);
     }
 
     public function test_it_fails_at_validation_if_shipping_method_id_is_not_existed()
@@ -77,5 +76,26 @@ class OrderStoreTest extends TestCase
 
         $response->assertStatus(422)
             ->assertJsonValidationErrors(['address_id']);
+    }
+
+    public function test_it_fails_at_validation_if_shipping_method_not_ready_for_the_address()
+    {
+        $response = $this->jsonAs(
+            factory(User::class)->create(),
+            'post',
+            '/api/orders',
+            [
+                'address_id' => factory(Address::class)->create()->id,
+                'shipping_method_id' => factory(ShippingMethod::class)->create()->id
+            ]
+        );
+
+        $response->assertStatus(422)
+            ->assertJsonValidationErrors(['shipping_method_id'])
+            ->assertJsonFragment([
+                'shipping_method_id' => [
+                    'It is not available for the address'
+                ]
+            ]);
     }
 }
