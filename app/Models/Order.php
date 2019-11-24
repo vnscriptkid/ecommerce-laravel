@@ -6,6 +6,11 @@ use Illuminate\Database\Eloquent\Model;
 
 class Order extends Model
 {
+    const PENDING = 'pending';
+    const PROCESSING = 'processing';
+    const PAYMENT_FAILED = 'payment_failed';
+    const PAYMENT_COMPLETED = 'payment_completed';
+
     public function orderLines()
     {
         return $this->hasMany(OrderLine::class);
@@ -24,5 +29,14 @@ class Order extends Model
     public function shippingMethod()
     {
         return $this->belongsTo(ShippingMethod::class);
+    }
+
+    public static function boot()
+    {
+        parent::boot();
+
+        static::creating(function ($order) {
+            $order->status = self::PENDING;
+        });
     }
 }
