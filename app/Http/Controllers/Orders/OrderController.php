@@ -17,6 +17,10 @@ class OrderController extends Controller
 
     public function store(OrderStoreRequest $request, Cart $cart)
     {
+        if ($cart->isEmpty()) {
+            return response(null, 400);
+        }
+
         $order = $request->user()->orders()->create(
             array_merge(
                 $request->validated(),

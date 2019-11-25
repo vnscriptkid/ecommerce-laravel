@@ -102,9 +102,33 @@ class OrderStoreTest extends TestCase
             ]);
     }
 
+    public function test_it_is_bad_request_if_cart_of_user_empty()
+    {
+        $user = factory(User::class)->create();
+
+        list($address, $shippingMethod) = $this->orderDependencies($user);
+
+        $response = $this->jsonAs(
+            $user,
+            'post',
+            '/api/orders',
+            [
+                'address_id' => $address->id,
+                'shipping_method_id' => $shippingMethod->id
+            ]
+        );
+
+        $response->assertStatus(400);
+    }
+
     public function test_it_create_an_order()
     {
         $user = factory(User::class)->create();
+
+        $user->cart()->attach(
+            $this->productVariationWithStock(10),
+            ['quantity' => 5]
+        );
 
         list($address, $shippingMethod) = $this->orderDependencies($user);
 
@@ -122,7 +146,6 @@ class OrderStoreTest extends TestCase
         $this->assertDatabaseHas('orders', [
             'address_id' => $address->id,
             'shipping_method_id' => $shippingMethod->id,
-            'sub_total' => 0
         ]);
     }
 
