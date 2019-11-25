@@ -24,11 +24,7 @@ class OrderController extends Controller
             )
         );
 
-        $orderLines = $cart->items()->keyBy('id')->map(function ($item) {
-            return [
-                'quantity' => $item->pivot->quantity
-            ];
-        });
+        $orderLines = $cart->items()->forSyncing();
 
         // [ id: { quantity } ]
         $order->productVariations()->sync($orderLines);

@@ -151,8 +151,7 @@ class OrderStoreTest extends TestCase
         $response->assertStatus(200);
         $this->assertDatabaseHas('order_lines', [
             'product_variation_id' => $productVariation->id,
-            'quantity' => 2,
-            'order_id' => 1
+            'quantity' => 2
         ]);
     }
 
