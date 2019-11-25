@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Orders;
 
 use App\Cart\Cart;
+use App\Events\Order\OrderCreated;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\Orders\OrderStoreRequest;
 use App\Models\Order;
@@ -32,5 +33,7 @@ class OrderController extends Controller
 
         // [ id: { quantity } ]
         $order->productVariations()->sync($orderLines);
+
+        event(new OrderCreated($order));
     }
 }

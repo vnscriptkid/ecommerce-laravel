@@ -2,6 +2,7 @@
 
 namespace Tests\Feature\Orders;
 
+use App\Events\Order\OrderCreated;
 use App\Models\Address;
 use App\Models\Country;
 use App\Models\ProductVariation;
@@ -9,6 +10,7 @@ use App\Models\ShippingMethod;
 use App\Models\Stock;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\Event;
 use Tests\TestCase;
 
 class OrderStoreTest extends TestCase
@@ -147,6 +149,58 @@ class OrderStoreTest extends TestCase
             'address_id' => $address->id,
             'shipping_method_id' => $shippingMethod->id,
         ]);
+    }
+
+    public function test_event_is_dispatched_after_order_created()
+    {
+        Event::fake();
+        $user = factory(User::class)->create();
+
+        $user->cart()->attach(
+            $this->productVariationWithStock(10),
+            ['quantity' => 5]
+        );
+
+        list($address, $shippingMethod) = $this->orderDependencies($user);
+
+        $response = $this->jsonAs(
+            $user,
+            'post',
+            '/api/orders',
+            [
+                'address_id' => $address->id,
+                'shipping_method_id' => $shippingMethod->id
+            ]
+        );
+
+        $response->assertStatus(200);
+        Event::assertDispatched(OrderCreated::class);
+    }
+
+    public function test_cart_of_user_is_emptied_after_order_created()
+    {
+        $user = factory(User::class)->create();
+
+        $productVariation = $this->productVariationWithStock(20);
+
+        $user->cart()->sync([
+            $productVariation->id => ['quantity' => 2]
+        ]);
+
+        list($address, $shippingMethod) = $this->orderDependencies($user);
+
+        $response = $this->jsonAs(
+            $user,
+            'post',
+            '/api/orders',
+            [
+                'address_id' => $address->id,
+                'shipping_method_id' => $shippingMethod->id
+            ]
+        );
+
+        $response->assertStatus(200);
+        $this->assertEmpty($user->cart);
     }
 
     public function test_it_attaches_cart_items_to_order_lines()
