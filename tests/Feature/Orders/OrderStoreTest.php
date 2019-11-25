@@ -5,6 +5,7 @@ namespace Tests\Feature\Orders;
 use App\Events\Order\OrderCreated;
 use App\Models\Address;
 use App\Models\Country;
+use App\Models\Order;
 use App\Models\ProductVariation;
 use App\Models\ShippingMethod;
 use App\Models\Stock;
@@ -144,7 +145,7 @@ class OrderStoreTest extends TestCase
             ]
         );
 
-        $response->assertStatus(200);
+        $response->assertStatus(201);
         $this->assertDatabaseHas('orders', [
             'address_id' => $address->id,
             'shipping_method_id' => $shippingMethod->id,
@@ -173,7 +174,7 @@ class OrderStoreTest extends TestCase
             ]
         );
 
-        $response->assertStatus(200);
+        $response->assertStatus(201);
         Event::assertDispatched(OrderCreated::class);
     }
 
@@ -199,7 +200,7 @@ class OrderStoreTest extends TestCase
             ]
         );
 
-        $response->assertStatus(200);
+        $response->assertStatus(201);
         $this->assertEmpty($user->cart);
     }
 
@@ -225,11 +226,41 @@ class OrderStoreTest extends TestCase
             ]
         );
 
-        $response->assertStatus(200);
+        $response->assertStatus(201);
         $this->assertDatabaseHas('order_lines', [
             'product_variation_id' => $productVariation->id,
             'quantity' => 2
         ]);
+    }
+
+    public function test_it_returns_serialized_order()
+    {
+        $user = factory(User::class)->create();
+
+        $productVariation = $this->productVariationWithStock(20);
+
+        $user->cart()->sync([
+            $productVariation->id => ['quantity' => 2]
+        ]);
+
+        list($address, $shippingMethod) = $this->orderDependencies($user);
+
+        $response = $this->jsonAs(
+            $user,
+            'post',
+            '/api/orders',
+            [
+                'address_id' => $address->id,
+                'shipping_method_id' => $shippingMethod->id
+            ]
+        );
+
+        $order = Order::first();
+
+        $response->assertStatus(201)
+            ->assertJsonFragment([
+                'id' => $order->id,
+            ]);
     }
 
     // helpers

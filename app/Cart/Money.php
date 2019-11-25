@@ -29,7 +29,7 @@ class Money
 
     public function amount()
     {
-        return $this->money->getAmount();
+        return (int) $this->money->getAmount();
     }
 
     public function add(Money $moneyWrapper)
