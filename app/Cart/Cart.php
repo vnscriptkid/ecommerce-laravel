@@ -17,6 +17,11 @@ class Cart
         $this->changed = false;
     }
 
+    public function items()
+    {
+        return $this->user->cart;
+    }
+
     public function add(array $items = [])
     {
         // items : [ { id, quantity } ]

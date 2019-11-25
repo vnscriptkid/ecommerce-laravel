@@ -41,4 +41,10 @@ class Order extends Model
             $order->status = self::PENDING;
         });
     }
+
+    public function productVariations()
+    {
+        return $this->belongsToMany(ProductVariation::class, 'order_lines')
+            ->withPivot(['quantity'])->withTimestamps();
+    }
 }

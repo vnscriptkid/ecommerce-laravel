@@ -5,6 +5,7 @@ namespace Tests\Unit\Models;
 use App\Models\Address;
 use App\Models\Order;
 use App\Models\OrderLine;
+use App\Models\ProductVariation;
 use App\Models\ShippingMethod;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -86,5 +87,30 @@ class OrderTest extends TestCase
         $order = factory(Order::class)->create();
 
         $this->assertEquals($order->status, 'pending');
+    }
+
+    public function test_order_belongs_to_many_product_variations()
+    {
+        $order = factory(Order::class)->create();
+
+        $order->productVariations()->attach(
+            $variation = factory(ProductVariation::class)->create(),
+            ['quantity' => 20]
+        );
+
+        $this->assertInstanceOf(ProductVariation::class, $order->productVariations->first());
+        $this->assertEquals($order->productVariations->first()->name, $variation->name);
+    }
+
+    public function test_order_populate_variations_with_pivot()
+    {
+        $order = factory(Order::class)->create();
+
+        $order->productVariations()->attach(
+            $variation = factory(ProductVariation::class)->create(),
+            ['quantity' => 20]
+        );
+
+        $this->assertEquals($order->productVariations->first()->pivot->quantity, 20);
     }
 }

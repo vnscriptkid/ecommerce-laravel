@@ -17,11 +17,20 @@ class OrderController extends Controller
 
     public function store(OrderStoreRequest $request, Cart $cart)
     {
-        $request->user()->orders()->create(
+        $order = $request->user()->orders()->create(
             array_merge(
                 $request->validated(),
                 ['sub_total' => $cart->subTotal()->amount()]
             )
         );
+
+        $orderLines = $cart->items()->keyBy('id')->map(function ($item) {
+            return [
+                'quantity' => $item->pivot->quantity
+            ];
+        });
+
+        // [ id: { quantity } ]
+        $order->productVariations()->sync($orderLines);
     }
 }

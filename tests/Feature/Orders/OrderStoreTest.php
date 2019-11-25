@@ -4,7 +4,9 @@ namespace Tests\Feature\Orders;
 
 use App\Models\Address;
 use App\Models\Country;
+use App\Models\ProductVariation;
 use App\Models\ShippingMethod;
+use App\Models\Stock;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -104,13 +106,7 @@ class OrderStoreTest extends TestCase
     {
         $user = factory(User::class)->create();
 
-        $country = factory(Country::class)->create();
-
-        $country->shippingMethods()->attach(
-            $shippingMethod = factory(ShippingMethod::class)->create()
-        );
-
-        $address = factory(Address::class)->create(['user_id' => $user->id, 'country_id' => $country->id]);
+        list($address, $shippingMethod) = $this->orderDependencies($user);
 
         $response = $this->jsonAs(
             $user,
@@ -128,5 +124,61 @@ class OrderStoreTest extends TestCase
             'shipping_method_id' => $shippingMethod->id,
             'sub_total' => 0
         ]);
+    }
+
+    public function test_it_attaches_cart_items_to_order_lines()
+    {
+        $user = factory(User::class)->create();
+
+        $productVariation = $this->productVariationWithStock(20);
+
+        $user->cart()->sync([
+            $productVariation->id => ['quantity' => 2]
+        ]);
+
+        list($address, $shippingMethod) = $this->orderDependencies($user);
+
+        $response = $this->jsonAs(
+            $user,
+            'post',
+            '/api/orders',
+            [
+                'address_id' => $address->id,
+                'shipping_method_id' => $shippingMethod->id
+            ]
+        );
+
+        $response->assertStatus(200);
+        $this->assertDatabaseHas('order_lines', [
+            'product_variation_id' => $productVariation->id,
+            'quantity' => 2,
+            'order_id' => 1
+        ]);
+    }
+
+    // helpers
+    protected function orderDependencies(User $user)
+    {
+        $country = factory(Country::class)->create();
+
+        $country->shippingMethods()->attach(
+            $shippingMethod = factory(ShippingMethod::class)->create()
+        );
+
+        $address = factory(Address::class)->create(['user_id' => $user->id, 'country_id' => $country->id]);
+
+        return [$address, $shippingMethod];
+    }
+
+    protected function productVariationWithStock($stock = 10)
+    {
+        $variation = factory(ProductVariation::class)->create();
+
+        factory(Stock::class)->create([
+            'product_variation_id' => $variation->id,
+            'quantity' => $stock
+        ]);
+
+        return $variation;
     }
 }
